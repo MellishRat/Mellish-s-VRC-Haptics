@@ -1,0 +1,17 @@
+# Local Wi-Fi credentials and private configuration (future stages)
+firmware/**/secrets.h
+firmware/**/wifi_config.h
+*.local.h
+.env
+
+# Arduino/editor/build output
+build/
+.pio/
+.vscode/
+*.bin
+*.elf
+*.map
+
+# OS files
+.DS_Store
+Thumbs.db
