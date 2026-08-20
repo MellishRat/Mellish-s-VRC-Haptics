@@ -40,6 +40,16 @@ not part of the runtime control path.
 - two vibration motors, each connected through its own driver module
 - suitable regulated motor supply with a common ground
 
+### Hardware reference photos
+
+| ESP32-WROOM-32 development board | SSD1306 128×32 I²C OLED | Vibration motor driver module |
+|---|---|---|
+| ![ESP32-WROOM-32 development board](images/esp32-wroom-32-dev-board.jpg) | ![SSD1306 128×32 I²C OLED](images/ssd1306-128x32-oled.jpg) | ![Three-pin vibration motor driver module](images/vibration-motor-module.jpg) |
+
+The photos are component references, not wiring diagrams. Always follow the
+printed pin labels and the pin table below rather than inferring connections
+from component orientation in a photograph.
+
 See [docs/wiring.md](docs/wiring.md) before powering motors.
 
 ## Arduino setup

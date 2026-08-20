@@ -1,5 +1,28 @@
 # Wiring and pinout
 
+## Component references
+
+### ESP32-WROOM-32 development board
+
+![ESP32-WROOM-32 development board](../images/esp32-wroom-32-dev-board.jpg)
+
+The reference board uses an ESP32-WROOM-32D module and USB-C connector. Check
+the silkscreen on the actual board when locating GPIO21, GPIO22, GPIO25,
+GPIO26, 3.3 V, 5 V, and GND.
+
+### SSD1306 128×32 I²C OLED
+
+![SSD1306 128×32 I²C OLED](../images/ssd1306-128x32-oled.jpg)
+
+The pictured four-pin module is labelled `GND`, `VCC`, `SCL`, and `SDA`.
+
+### Vibration motor module
+
+![Three-pin vibration motor driver module](../images/vibration-motor-module.jpg)
+
+The pictured module has `GND`, `VCC`, and signal/input pins. Verify the labels
+on each physical module before applying power; product revisions can differ.
+
 ## Pin table
 
 | ESP32 connection | Destination | Purpose |
