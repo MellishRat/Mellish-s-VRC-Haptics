@@ -1,70 +1,67 @@
-# OscGoesBrrr and Buttplug architecture
+# Architecture and protocol
 
-This project will use **OscGoesBrrr (OGB)** as the VRChat integration layer and
-**Intiface Central** as the Buttplug server/hardware manager.
+## Runtime architecture
 
-```text
-VRChat Contact Receivers
-          |
-          | OSC avatar parameters
-          v
-   OscGoesBrrr (PC)
-          |
-          | Buttplug client connection
-          v
-   Intiface Central
-          |
-          | DIY Device WebSocket connection over Wi-Fi
-          v
- ESP32 device: [Left vibrator] [Right vibrator]
+```mermaid
+sequenceDiagram
+    participant V as VRChat (PC)
+    participant O as OscGoesBrrr (PC)
+    participant I as Intiface Central (phone)
+    participant E as ESP32
+    V->>O: OSC contact/avatar values
+    O->>I: Buttplug commands via ws://phone-ip:12345
+    I->>E: Lovense commands over BLE
+    E->>E: Map output 0/1 to GPIO25/26 PWM
+    E-->>I: DeviceType, Battery, Status responses
 ```
 
-## Responsibilities
+The ESP32 does not parse VRChat OSC. OGB interprets VRChat data and controls
+Intiface. Intiface translates Buttplug output commands into Lovense BLE traffic.
 
-- **VRChat** produces contact values from the avatar.
-- **OscGoesBrrr** reads those values and maps contact sources to haptic device
-  outputs.
-- **Intiface Central** is the Buttplug server. OGB connects to it as a client.
-- **ESP32** connects to Intiface's Device WebSocket Server as hardware. It does
-  not need to parse VRChat OSC and it is not itself the main Buttplug server.
-- The ESP32 should appear as one device with two independently addressable
-  vibration features, if the pinned Intiface device configuration supports that
-  cleanly. If OGB cannot bind features separately, the tested fallback is two
-  logical one-vibrator devices backed by the same ESP32 connection/firmware.
+## BLE identity
 
-## Why the integration is a separate stage
+| Property | Value |
+|---|---|
+| Advertised name | `LVS-Edge` |
+| Emulated model | Lovense Edge (`P`) |
+| Stable logical address | `MELLISH-HAPTICS-001` |
+| BLE service | `50300001-0023-4bd4-bbd5-a6920e4c5653` |
+| Command/write characteristic | `50300002-0023-4bd4-bbd5-a6920e4c5653` |
+| Response/read-notify characteristic | `50300003-0023-4bd4-bbd5-a6920e4c5653` |
 
-Buttplug's current documentation describes the WebSocket Device Manager as a
-reference-implementation feature rather than part of the stable Buttplug
-protocol. The v4 documentation currently has no complete device example. It
-also requires a User Device Configuration File (UDCF) and a supported emulated
-device protocol after the initial WebSocket handshake.
+The firmware uses a stable locally administered base MAC. This deliberately
+differs from the address used by the earlier BLE diagnostic sketch, preventing
+Android from reusing a stale bonded GATT-service cache.
 
-For that reason, do not hard-code an assumed current protocol into Stage 1. In
-the integration stage we will:
+## Lovense commands
 
-1. Record the exact Intiface Central, Buttplug, and OGB versions used for the
-   prototype.
-2. Enable Intiface's Device WebSocket Server and create the matching UDCF.
-3. Select the simplest supported two-vibrator protocol representation.
-4. Prove discovery, initialization, one output, stop, disconnect, and timeout
-   behavior before adding the second output.
-5. Capture the actual binary WebSocket command traffic in automated parser
-   tests so later updates cannot silently change motor behavior.
+| Command | Firmware behavior |
+|---|---|
+| `DeviceType;` | Replies `P:1:MELLISH-HAPTICS-001;` |
+| `Battery;` | Replies `100;` (wired prototype placeholder) |
+| `Status:1;` | Replies `2;` |
+| `Vibrate1:n;` | Sets Motor 1 / GPIO25, with `n` clamped to 0–20 |
+| `Vibrate2:n;` | Sets Motor 2 / GPIO26, with `n` clamped to 0–20 |
+| `Vibrate:n;` | Compatibility fallback that sets both motors |
+| `PowerOff;` | Stops both motors and replies `OK;` |
 
-## Required firmware safety behavior
+## Calibrated PWM mapping
 
-- Both outputs remain off during boot, Wi-Fi connection, and device discovery.
-- A `Stop` command stops both outputs.
-- Disconnect, protocol error, or command timeout stops both outputs.
-- Values are clamped to `0.0–1.0` before PWM conversion.
-- Left and right commands update independently; changing one must not reset the
-  other.
-- Network services are intended for a trusted local network and must not be
-  exposed to the public internet.
+Level 0 always produces PWM 0. Levels 1–20 are linearly mapped from each
+motor's independent minimum usable PWM to 255.
 
-References:
+| Lovense level | Motor 1 PWM (minimum 70) | Motor 2 PWM (minimum 75) |
+|---:|---:|---:|
+| 0 | 0 | 0 |
+| 1 | 70 | 75 |
+| 10 | 157 | 160 |
+| 20 | 255 | 255 |
 
-- [OscGoesBrrr getting started](https://github.com/OscToys/osc.toys/blob/main/docs/20-getting-started.mdx)
-- [Buttplug WebSocket Device Manager](https://buttplug.io/docs/dev-guide/inflating-buttplug/devices/websocket-device-manager/)
-- [Buttplug device control](https://buttplug.io/docs/dev-guide/writing-buttplug-applications/device-control/)
+## Safety behavior
+
+- Both outputs start at zero.
+- BLE disconnection immediately sets both outputs to zero.
+- Values are clamped to the Lovense 0–20 range.
+- Each channel updates independently for `Vibrate1` and `Vibrate2`.
+- The OLED is optional; failure to detect it does not disable the motor
+  failsafe or Serial diagnostics.

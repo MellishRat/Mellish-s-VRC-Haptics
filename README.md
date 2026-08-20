@@ -1,63 +1,73 @@
 # Mellish's VRC Haptics
 
-DIY ESP32 Wi-Fi haptics for VRChat using OscGoesBrrr, Buttplug/Intiface,
-avatar contacts, and vibration motors.
+DIY two-channel VRChat haptics using an ESP32, two vibration motor driver
+modules, an OLED, OscGoesBrrr, and Intiface Central.
 
-This repository is being developed in deliberately small, testable stages. The
-current firmware implements **Stage 1 only**: it verifies the OLED and two
-independent motor outputs with a repeating Left → Right → Both → Off sequence.
-It does not connect to Wi-Fi or receive OSC yet.
+## Current verified milestone
 
-## Stage 1 hardware
+As of 20 August 2026, the ESP32 firmware:
 
-- ESP32-WROOM-32 development board
-- SSD1306 128×32 I²C OLED (expected address `0x3C`)
-- Two 3-pin vibration motor modules with onboard drivers
-- A suitable regulated motor supply
+- advertises over Bluetooth Low Energy as `LVS-Edge`;
+- is discovered by Intiface as a Lovense Edge;
+- appears as one Intiface device with two vibration outputs;
+- maps output 0 to GPIO25 and output 1 to GPIO26;
+- preserves independent startup calibration (`70` and `75` PWM);
+- displays connection state and both 0–20 levels on a 128×32 OLED; and
+- stops both motors whenever the BLE connection drops.
 
-See [docs/wiring.md](docs/wiring.md) before applying power. In particular, do
-not power a bare motor from a GPIO, and do not assume that every module sold
-under the same generic description accepts 3.3 V logic.
+Discovery, BLE connection, Lovense identification, and the two-output device
+definition are verified. End-to-end VRChat contact mapping and final motor
+threshold calibration remain to be tested.
+
+## Signal path
+
+```mermaid
+flowchart LR
+    V["VRChat on PC"] -->|"OSC avatar/contact data"| O["OscGoesBrrr v2.1.28 on PC"]
+    O -->|"Buttplug WebSocket over LAN :12345"| I["Intiface Central on phone"]
+    I -->|"Bluetooth LE / Lovense protocol"| E["ESP32: LVS-Edge"]
+    E -->|"PWM GPIO25"| M1["Motor 1"]
+    E -->|"PWM GPIO26"| M2["Motor 2"]
+```
+
+USB is used for firmware upload, Serial Monitor, and optionally power. It is
+not part of the runtime control path.
+
+## Hardware
+
+- ESP32-WROOM-32 development board (`ESP32 Dev Module`)
+- SSD1306 128×32 I²C OLED at address `0x3C`
+- two vibration motors, each connected through its own driver module
+- suitable regulated motor supply with a common ground
+
+See [docs/wiring.md](docs/wiring.md) before powering motors.
 
 ## Arduino setup
 
-1. Install ESP32 board support in Arduino IDE and select the board matching your
-   ESP32-WROOM-32 development board (typically **ESP32 Dev Module**).
-2. Install these libraries using Library Manager:
-   - **Adafruit GFX Library**
-   - **Adafruit SSD1306**
-   - `Wire` is supplied by the ESP32 Arduino core.
-3. Open
-   `firmware/Mellish_VRC_Haptics/Mellish_VRC_Haptics.ino`.
-4. Disconnect motor power for the first upload. Upload the sketch and open the
-   Serial Monitor at 115200 baud.
-5. Confirm the OLED starts and GPIO 25/26 change in the expected sequence.
-6. After completing the checks in [docs/wiring.md](docs/wiring.md), connect motor
-   power and repeat the test.
+1. Install the Espressif ESP32 Arduino board package.
+2. Select **ESP32 Dev Module**.
+3. Install **Adafruit GFX Library** and **Adafruit SSD1306**.
+4. Open `firmware/Mellish_VRC_Haptics/Mellish_VRC_Haptics.ino`.
+5. Upload and open Serial Monitor at `115200` baud.
+6. Follow [docs/intiface-setup.md](docs/intiface-setup.md).
 
-The display shows the current test step and simple left/right activity bars.
-The test repeats continuously so wiring faults are easy to isolate.
+The BLE classes used by the sketch are supplied by the ESP32 board package.
+No Wi-Fi credentials or WebSocket library are required by the ESP32 firmware.
 
-## Planned stages
+## Documentation
 
-1. **Hardware test (current):** OLED and Left → Right → Both → Off motor test.
-2. Wi-Fi connection and IP status.
-3. Intiface DIY-device proof: pin compatible Intiface/Buttplug versions, connect
-   over the Device WebSocket Server, and prove one safe output command.
-4. Expose two independent vibration features and map them to left/right PWM.
-5. Connect OscGoesBrrr to Intiface and bind the two avatar contact sources to the
-   corresponding device features.
-6. Optional tuning, provisioning, and expansion only after the two-channel
-   prototype is reliable.
+- [Architecture and protocol](docs/architecture.md)
+- [Wiring and pinout](docs/wiring.md)
+- [Intiface and OGB setup](docs/intiface-setup.md)
+- [VRChat setup](docs/vrchat-setup.md)
+- [Troubleshooting](docs/troubleshooting.md)
+- [Verified checkpoint](docs/verified-checkpoint.md)
 
-See [docs/architecture.md](docs/architecture.md) and
-[docs/vrchat-setup.md](docs/vrchat-setup.md) for the intended integration.
+## Safety
 
-## Safety and scope
-
-This is hobby hardware documentation, not a certified wearable design. During
-bench testing, keep motors off the body, use current limiting where available,
-and stop if a module, wire, regulator, or ESP32 becomes warm.
+Never drive a motor directly from an ESP32 pin. Bench-test with suitable driver
+modules and a correctly sized supply. Keep all grounds common, disconnect motor
+power while changing wiring, and stop if any component becomes warm.
 
 ## License
 

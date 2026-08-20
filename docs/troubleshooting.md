@@ -1,40 +1,49 @@
-# Stage 1 troubleshooting
+# Troubleshooting
 
-## OLED stays blank
+## Intiface sees `LVS-Edge` in logs but it is absent from Devices
 
-- Confirm VCC is 3.3 V, ground is common, SDA is GPIO 21, and SCL is GPIO 22.
-- Check Serial Monitor at 115200 baud. The motor test continues even when OLED
-  initialization fails.
-- Run an I²C scanner. Some look-alike displays use a different address; change
-  `kOledAddress` only after confirming the detected address.
-- Confirm the display really is a 128×32 SSD1306 rather than a look-alike using a
-  different controller.
+Discovery is not the same as initialization. Check Serial Monitor for
+`BLE CONNECTED` followed by `DeviceType;`. Leave the scan running long enough
+for initialization and ensure no other app is connected to the ESP32.
 
-## Motor never runs
+## nRF Connect shows an old `12345678...` service
 
-- Disconnect power before changing wiring.
-- Confirm module VCC with a meter and confirm ESP32 ground is connected to module
-  ground.
-- Measure the module `IN` pin. It should switch between about 0 V and 3.3 V.
-- Verify whether the module is active HIGH or active LOW and whether 3.3 V meets
-  its documented HIGH threshold.
-- Test one module at a time with a suitable current-limited supply.
+That UUID belongs to the temporary BLE radio-test sketch. Android has cached the
+old GATT table. The current firmware uses a separate stable base MAC to avoid
+that cache. Upload the latest firmware, reset the ESP32, and select the newly
+advertised address. Do not bond it.
+
+## `btleplug error: NotConnected`
+
+- Close nRF Connect completely; only one client can hold the BLE connection.
+- Remove any old ESP32 test bond.
+- Toggle phone Bluetooth off and on, then reset the ESP32.
+- Confirm a dedicated BLE scan sees `LVS-Edge` and service `50300001...`.
+
+## OLED remains blank
+
+Confirm address `0x3C`, SDA GPIO21, SCL GPIO22, 3.3 V, and common ground. The
+firmware continues safely without the display and reports the failure over
+Serial at 115200 baud.
+
+## Motor does not start at level 1
+
+Increase only that channel's minimum in steps of about five:
+
+```cpp
+const uint8_t MOTOR1_MIN_PWM = 70;
+const uint8_t MOTOR2_MIN_PWM = 75;
+```
+
+Repeat `0 → 1 → 0` five to ten times. Do not change the other channel. Confirm
+the other motor remains physically still and its OLED/Serial level remains 0.
 
 ## Motor is always on
 
-- Disconnect motor power immediately.
-- Verify `IN`, `VCC`, and `GND` are not swapped.
-- Check whether the module is active LOW. Update `kMotorOn`/`kMotorOff` only after
-  identifying the module behavior.
+Disconnect motor power. Verify `IN`, `VCC`, and `GND`, and confirm the driver is
+active high. Do not compensate for incorrect wiring in software.
 
-## ESP32 resets or OLED flickers when a motor starts
+## ESP32 resets or OLED flickers when motors start
 
-This indicates a power integrity or motor-noise problem. Do not work around it by
-adding delays. Use a correctly sized motor supply, short ground wiring, suitable
-decoupling, and the suppression recommended for the exact module. Test motors
-off-body until the hardware is stable.
-
-## Left and right are reversed
-
-Move the module input leads to their documented pins: left to GPIO 25 and right
-to GPIO 26. Do not swap powered connections.
+Treat this as a power-integrity or motor-noise problem. Use a correctly sized
+supply, common ground, short wiring, and appropriate decoupling/suppression.
