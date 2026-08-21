@@ -43,6 +43,7 @@ sub-700 mA breadboard supply; the production target is about 5 V / 3 A.
 - [Safe testing and calibration](docs/testing.md)
 - [Wiring and power](wiring/README.md)
 - [Troubleshooting](docs/troubleshooting.md)
+- [Standalone PCA9685 motor bench test](docs/pca9685-bench-test.md)
 
 Implemented: firmware-side control, parsing, serial tools, display, and safety.
 Pending: hardware validation, Buttplug handler/config, custom Android build test,
