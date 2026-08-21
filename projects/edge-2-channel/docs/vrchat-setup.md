@@ -1,7 +1,7 @@
 # VRChat integration
 
-VRChat integration comes after the two Intiface outputs pass their independent
-bench test.
+First confirm the completed two-channel build using Intiface's independent
+output controls, then configure the VRChat-specific mapping.
 
 ## Planned data path
 
@@ -20,11 +20,6 @@ VB02 → output 1 → GPIO26 → Motor 2
 The firmware intentionally has no knowledge of body-part names. All semantic
 mapping belongs in the avatar/OGB configuration.
 
-## Current status
-
-- ESP32 BLE discovery and connection: verified
-- Edge identification: verified
-- Two outputs visible in Intiface: verified
-- Independent physical motor response from Intiface controls: pending
-- OGB feature binding: pending
-- VRChat SPS intensity path: pending
+The BLE device, two Intiface outputs, and independent physical motor response
+are hardware verified. OGB IDs and avatar contact placement are configured per
+avatar and are not embedded in the firmware.

@@ -2,12 +2,10 @@
 
 ## Intiface on the phone
 
-1. Remove the obsolete custom WebSocket-device entry if one was created during
-   early testing. The current ESP32 firmware uses Bluetooth LE.
-2. Start the Intiface engine.
-3. Start a normal device scan.
-4. Wait for `LVS-Edge` to be discovered and initialized.
-5. Confirm the Devices page shows a Lovense Edge with two vibration outputs.
+1. Start the Intiface engine.
+2. Start a normal Bluetooth device scan in Intiface.
+3. Wait for `LVS-Edge` to be discovered and initialized.
+4. Confirm the Devices page shows a Lovense Edge with two vibration outputs.
 
 Expected ESP32 Serial output:
 
@@ -20,6 +18,9 @@ BLE TX: P:1:MELLISH-HAPTICS-001;
 
 Android's normal Bluetooth settings may not list this BLE-only peripheral. The
 Intiface scan is authoritative. Do not manually bond the ESP32.
+
+The ESP32 connects only by BLE. It does not need the phone's IP address, Wi-Fi
+credentials, or any custom WebSocket-device entry.
 
 ## OscGoesBrrr on the PC
 

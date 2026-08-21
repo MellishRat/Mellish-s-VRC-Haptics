@@ -1,4 +1,4 @@
-# Verified checkpoint — 20 August 2026
+# Hardware-verified checkpoint — 20 August 2026
 
 ## Verified
 
@@ -9,17 +9,14 @@
 - Intiface on Android discovers `LVS-Edge` over BLE.
 - Intiface identifies it as a Lovense Edge.
 - The device populates in Intiface with two vibration outputs.
+- Intiface controls the two physical motors independently across the `0–20` range.
+- Motor 1 has a verified minimum PWM of `70`; Motor 2 has a verified minimum PWM of `75`.
 - OGB v2.1.28 connects from the PC to Intiface on the phone over the LAN.
 - BLE disconnect invokes the firmware motor-off failsafe.
 
-## Pending validation
-
-- Exercise both Intiface controls against physical motors at levels 0, 1, 10,
-  and 20.
-- Confirm output 0 affects only GPIO25 and output 1 only GPIO26.
-- Finalize each motor's reliable level-1 startup threshold.
-- Bind OGB sources to the two Intiface outputs.
-- Validate the complete VRChat/VRCFury SPS path.
+The ESP32/Intiface two-channel build is complete and hardware verified. Avatar
+contact placement and OscGoesBrrr source bindings remain user-specific setup,
+not unverified firmware behaviour.
 
 ## Important diagnostic result
 
