@@ -1,54 +1,49 @@
 # Mellish 16-Channel Haptic Controller — Experimental
 
-**Status: experimental; not a replacement for the verified two-channel build.**
+> **Status (2026-08-21):** ESP32/PCA9685 firmware is ready for staged bench
+> testing. Stock Intiface Central does **not** yet discover this custom protocol
+> or expose 16 outputs. A Buttplug protocol/config contribution—and until it is
+> released, a custom Intiface build—is required.
 
-This development area moves motor PWM generation to a PCA9685 at I²C address
-`0x40`. The PCA9685 shares the ESP32's GPIO21/GPIO22 I²C bus with the SSD1306
-OLED at `0x3C`.
+This custom ESP32 controller drives 16 independent motor modules. It advertises
+as `MELLISH-16CH` and does not impersonate a commercial Lovense product. The
+completed [two-channel reference](../edge-2-channel/README.md) remains unchanged.
 
-![DollaTek PCA9685 16-channel 12-bit PWM board](../../images/DollaTek%20PCA9685%2016%20Channel%2012-bit%20PWM.jpg)
+## Channel mapping
 
-The photograph is a component reference. The shared editable
-[Fritzing project](../../images/layout.fzz) contains layouts for both repository
-projects; select the 16-channel layout here, verify the actual board labels and the
-[wiring guide](wiring/README.md) before applying power.
+| Motor | PCA | Motor | PCA | Motor | PCA | Motor | PCA |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 0 | 5 | 4 | 9 | 8 | 13 | 12 |
+| 2 | 1 | 6 | 5 | 10 | 9 | 14 | 13 |
+| 3 | 2 | 7 | 6 | 11 | 10 | 15 | 14 |
+| 4 | 3 | 8 | 7 | 12 | 11 | 16 | 15 |
 
-The current firmware still identifies as a Lovense Edge. Intiface therefore
-exposes only two vibration outputs: output 0 controls PCA9685 channel 0 and
-output 1 controls PCA9685 channel 1. Custom 4–16-output Intiface support is
-future experimental work; channels 2–15 are not independently addressable from
-Intiface yet.
+OLED `0x3C` and PCA9685 `0x40` share SDA GPIO21/SCL GPIO22. PCA logic is
+3.3 V; motors use a separate regulated 5 V supply; all grounds are common.
 
-## Current experimental features
+## Firmware features
 
-- PCA9685 PWM controller at I²C address `0x40`
-- SSD1306 OLED and PCA9685 sharing SDA GPIO21 and SCL GPIO22
-- PCA9685 logic VCC powered from ESP32 3.3 V
-- separate motor power entering at PCA9685 `V+` and `GND`
-- all grounds connected in common
-- Intiface outputs 0 and 1 mapped to PCA9685 channels 0 and 1
-- Serial Monitor `TEST` command pulses channels 0–15 sequentially
-- Serial Monitor `STOP`, Lovense `PowerOff;`, and BLE disconnect switch every channel off
+- 16 independent levels (0–20), per-channel calibration, and 0/4095 endpoints;
+- all-off startup and BLE-disconnect failsafes;
+- persistent fragmented/multi-command BLE buffering and strict validation;
+- BLE callbacks only queue work; OLED/PCA9685 I²C stays in `loop()`;
+- readable OLED connection, active-count, highest-level, and test status;
+- non-blocking, one-motor-at-a-time sequential test.
 
-## Firmware
-
-Open
-[`firmware/Mellish_16_Channel_Experimental/Mellish_16_Channel_Experimental.ino`](firmware/Mellish_16_Channel_Experimental/Mellish_16_Channel_Experimental.ino).
-The sketch folder and `.ino` filename match.
-
-Required Arduino libraries:
-
-- Adafruit GFX Library
-- Adafruit SSD1306
-- Adafruit PWM Servo Driver Library
-- BLE support supplied by the Espressif ESP32 Arduino core
+Open the matching [Arduino sketch](firmware/Mellish_16_Channel_Experimental/Mellish_16_Channel_Experimental.ino).
+At 115200 baud use `STOP`, `TEST`, `CH <1-16> <0-20>`, `ALL <0-20>`, and
+`STATUS`. `ALL` prints a power warning: never run simultaneous motors from a
+sub-700 mA breadboard supply; the production target is about 5 V / 3 A.
 
 ## Documentation
 
-- [Experimental scope and protocol](docs/architecture.md)
-- [PCA9685 wiring and power guidance](wiring/README.md)
-- [Shared editable Fritzing layouts](../../images/layout.fzz)
-- [Development and test procedure](docs/testing.md)
+- [Architecture decision and Intiface/OscGoesBrrr boundary](docs/architecture.md)
+- [Custom BLE protocol](docs/protocol.md)
+- [Installation and libraries](docs/firmware-installation.md)
+- [Safe testing and calibration](docs/testing.md)
+- [Wiring and power](wiring/README.md)
+- [Troubleshooting](docs/troubleshooting.md)
 
-For a known-good build, use the
-[Mellish Edge-Compatible Two-Motor Emulator](../edge-2-channel/README.md).
+Implemented: firmware-side control, parsing, serial tools, display, and safety.
+Pending: hardware validation, Buttplug handler/config, custom Android build test,
+and end-to-end VRChat → OscGoesBrrr → Android Intiface validation.
