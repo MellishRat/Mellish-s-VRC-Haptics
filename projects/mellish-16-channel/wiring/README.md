@@ -1,5 +1,16 @@
 # PCA9685 experimental wiring
 
+## Layout files
+
+- [Open or download the shared editable Fritzing project](../../../images/layout.fzz)
+- [View the PCA9685 component photograph](../../../images/DollaTek%20PCA9685%2016%20Channel%2012-bit%20PWM.jpg)
+
+The Fritzing file contains layouts for both repository projects. Select the
+experimental 16-channel layout here. It is an editable layout aid, not a
+substitute for checking the labels and electrical ratings on the physical
+modules. The textual connection table and safety requirements below are
+authoritative for this project.
+
 ## I²C and logic connections
 
 | ESP32 | OLED | PCA9685 | Purpose |

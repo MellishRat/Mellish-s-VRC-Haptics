@@ -6,6 +6,13 @@ This development area moves motor PWM generation to a PCA9685 at I²C address
 `0x40`. The PCA9685 shares the ESP32's GPIO21/GPIO22 I²C bus with the SSD1306
 OLED at `0x3C`.
 
+![DollaTek PCA9685 16-channel 12-bit PWM board](../../images/DollaTek%20PCA9685%2016%20Channel%2012-bit%20PWM.jpg)
+
+The photograph is a component reference. The shared editable
+[Fritzing project](../../images/layout.fzz) contains layouts for both repository
+projects; select the 16-channel layout here, verify the actual board labels and the
+[wiring guide](wiring/README.md) before applying power.
+
 The current firmware still identifies as a Lovense Edge. Intiface therefore
 exposes only two vibration outputs: output 0 controls PCA9685 channel 0 and
 output 1 controls PCA9685 channel 1. Custom 4–16-output Intiface support is
@@ -40,6 +47,7 @@ Required Arduino libraries:
 
 - [Experimental scope and protocol](docs/architecture.md)
 - [PCA9685 wiring and power guidance](wiring/README.md)
+- [Shared editable Fritzing layouts](../../images/layout.fzz)
 - [Development and test procedure](docs/testing.md)
 
 For a known-good build, use the

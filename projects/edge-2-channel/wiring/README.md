@@ -1,5 +1,14 @@
 # Two-channel wiring and pinout
 
+## Layout files
+
+- [Open or download the shared editable Fritzing project](../../../images/layout.fzz)
+- [View the rendered two-motor breadboard diagram](two-motor-breadboard.png)
+
+The Fritzing project contains layouts for both repository projects. Select the
+stable two-channel layout for this build and verify all physical pin labels
+against the connection table below before applying power.
+
 ## Connections
 
 | ESP32 connection | Destination | Purpose |

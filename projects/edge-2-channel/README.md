@@ -47,6 +47,7 @@ The sketch folder and `.ino` filename match, as required by Arduino.
 
 - [Architecture, BLE identity, and protocol](docs/architecture.md)
 - [Wiring, pinout, and external motor drivers](wiring/README.md)
+- [Shared editable Fritzing layouts](../../images/layout.fzz)
 - [Intiface on phone and OscGoesBrrr on PC](docs/intiface-setup.md)
 - [VRChat integration](docs/vrchat-setup.md)
 - [Troubleshooting](docs/troubleshooting.md)
