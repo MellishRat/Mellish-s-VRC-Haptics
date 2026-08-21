@@ -1,83 +1,34 @@
 # Mellish's VRC Haptics
 
-DIY two-channel VRChat haptics using an ESP32, two vibration motor driver
-modules, an OLED, OscGoesBrrr, and Intiface Central.
+ESP32 haptic-controller projects for Intiface and OscGoesBrrr. Start with the
+completed two-channel build unless you specifically want to develop and test
+the experimental PCA9685 design.
 
-## Current verified milestone
-
-As of 20 August 2026, the ESP32 firmware:
-
-- advertises over Bluetooth Low Energy as `LVS-Edge`;
-- is discovered by Intiface as a Lovense Edge;
-- appears as one Intiface device with two vibration outputs;
-- maps output 0 to GPIO25 and output 1 to GPIO26;
-- preserves independent startup calibration (`70` and `75` PWM);
-- displays connection state and both 0–20 levels on a 128×32 OLED; and
-- stops both motors whenever the BLE connection drops.
-
-Discovery, BLE connection, Lovense identification, and the two-output device
-definition are verified. End-to-end VRChat contact mapping and final motor
-threshold calibration remain to be tested.
-
-## Signal path
-
-```mermaid
-flowchart LR
-    V["VRChat on PC"] -->|"OSC avatar/contact data"| O["OscGoesBrrr v2.1.28 on PC"]
-    O -->|"Buttplug WebSocket over LAN :12345"| I["Intiface Central on phone"]
-    I -->|"Bluetooth LE / Lovense protocol"| E["ESP32: LVS-Edge"]
-    E -->|"PWM GPIO25"| M1["Motor 1"]
-    E -->|"PWM GPIO26"| M2["Motor 2"]
-```
-
-USB is used for firmware upload, Serial Monitor, and optionally power. It is
-not part of the runtime control path.
-
-## Hardware
-
-- ESP32-WROOM-32 development board (`ESP32 Dev Module`)
-- SSD1306 128×32 I²C OLED at address `0x3C`
-- two vibration motors, each connected through its own driver module
-- suitable regulated motor supply with a common ground
-
-### Hardware reference photos
-
-| ESP32-WROOM-32 development board | SSD1306 128×32 I²C OLED | Vibration motor driver module |
+| Project | Status | Description |
 |---|---|---|
-| ![ESP32-WROOM-32 development board](images/esp32-wroom-32-dev-board.jpg) | ![SSD1306 128×32 I²C OLED](images/ssd1306-128x32-oled.jpg) | ![Three-pin vibration motor driver module](images/vibration-motor-module.jpg) |
+| [Mellish Edge-Compatible Two-Motor Emulator](projects/edge-2-channel/README.md) | **Stable and verified** | Hardware-verified ESP32 build with two independent `0–20` Intiface vibration outputs on GPIO25 and GPIO26. |
+| [Mellish 16-Channel Haptic Controller — Experimental](projects/mellish-16-channel/README.md) | **Experimental** | PCA9685 development area. Channels 0 and 1 map to the two currently exposed Edge-compatible outputs; custom 4–16-output Intiface support is future work. |
 
-The photos are component references, not wiring diagrams. Always follow the
-printed pin labels and the pin table below rather than inferring connections
-from component orientation in a photograph.
+## Recommended starting point
 
-See [docs/wiring.md](docs/wiring.md) before powering motors.
+Build the [stable two-channel project](projects/edge-2-channel/README.md) first.
+It contains the verified firmware, wiring guidance, phone/PC connection steps,
+troubleshooting notes, and the proposed `edge-2ch-v1.0.0` release notes.
 
-## Arduino setup
+The [16-channel project](projects/mellish-16-channel/README.md) is intentionally
+kept separate so experimental PCA9685 work cannot be confused with the verified
+direct-GPIO firmware.
 
-1. Install the Espressif ESP32 Arduino board package.
-2. Select **ESP32 Dev Module**.
-3. Install **Adafruit GFX Library** and **Adafruit SSD1306**.
-4. Open `firmware/Mellish_VRC_Haptics/Mellish_VRC_Haptics.ino`.
-5. Upload and open Serial Monitor at `115200` baud.
-6. Follow [docs/intiface-setup.md](docs/intiface-setup.md).
+## Shared images
 
-The BLE classes used by the sketch are supplied by the ESP32 board package.
-No Wi-Fi credentials or WebSocket library are required by the ESP32 firmware.
-
-## Documentation
-
-- [Architecture and protocol](docs/architecture.md)
-- [Wiring and pinout](docs/wiring.md)
-- [Intiface and OGB setup](docs/intiface-setup.md)
-- [VRChat setup](docs/vrchat-setup.md)
-- [Troubleshooting](docs/troubleshooting.md)
-- [Verified checkpoint](docs/verified-checkpoint.md)
+Component reference photographs are retained in [`images/`](images/README.md).
+Project-specific wiring diagrams live with each project.
 
 ## Safety
 
-Never drive a motor directly from an ESP32 pin. Bench-test with suitable driver
-modules and a correctly sized supply. Keep all grounds common, disconnect motor
-power while changing wiring, and stop if any component becomes warm.
+Never drive a motor directly from an ESP32 GPIO. Use a suitably rated driver or
+MOSFET, a correctly rated regulated motor supply, appropriate protection, and a
+common ground. Disconnect motor power before changing wiring.
 
 ## License
 
