@@ -38,8 +38,21 @@ GPIO22 ─────┬── OLED SCL
             └── PCA9685 SCL
 
 regulated motor-supply positive ── PCA9685 V+
-PCA9685 channels 0–15 ──────────── suitable motor modules/controllers
+PCA9685 channels 0–15 ──────────── motor-module IN pins 1–16
 ```
+
+## Motor-module connections
+
+| Module pin | Connect to |
+|---|---|
+| `IN` | Corresponding PCA9685 PWM channel 0–15 |
+| `VCC` | Regulated motor-supply positive (nominal 5 V) |
+| `GND` | Motor-supply/common ground |
+
+The PCA9685 `V+` rail does not power a module unless the board's terminal/rail
+is actually connected as expected; verify the physical board with a meter and
+its documentation. Each listed motor module already contains its driver, but
+never substitute a bare motor on a PCA9685 output.
 
 ## Motor modules and supply sizing
 
@@ -54,3 +67,7 @@ Use appropriately rated distribution wiring, connectors, protection, motor
 drivers, and decoupling. Never drive a motor from an ESP32 GPIO or assume a bare
 PCA9685 output can supply motor current; each PWM channel must feed a suitable
 motor-driver or MOSFET input.
+
+A production target around regulated 5 V / 3 A provides useful margin. A
+sub-700 mA breadboard supply is limited to sequential, one-motor testing and must
+never be used for a simultaneous 16-motor test.
